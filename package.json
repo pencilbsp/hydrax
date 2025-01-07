@@ -7,7 +7,9 @@
         "@elysiajs/html": "^1.2.0",
         "@elysiajs/static": "^1.2.0",
         "@kitajs/ts-html-plugin": "^4.1.1",
-        "elysia": "^1.2.10"
+        "elysia": "^1.2.10",
+        "ioredis": "^5.4.2",
+        "redis": "^4.7.0"
     },
     "scripts": {
         "dev": "bun --watch run app.ts"

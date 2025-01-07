@@ -1,29 +1,36 @@
 import { Elysia, t } from "elysia";
 
+import redis from "../utils/redis";
+
+const TEMPLATE_PATH = "public/core.html";
 const VALID_METADATA = /JSON\.parse\(atob\("([^"]+)"\)\)/;
 
-const appRoute = new Elysia({ prefix: "/" });
+const appRoute = new Elysia();
 
 appRoute.get(
     "/",
-    async ({ query, set }) => {
+    async ({ query, error }) => {
         try {
-            const response = await fetch(`https://abysscdn.com/?v=${query.v}`);
-            if (!response.ok) throw new Error();
+            let encryptedString = await redis.get(query.v);
+            if (!encryptedString) {
+                console.log(`https://abysscdn.com/?v=${query.v}`);
+                const response = await fetch(`https://abysscdn.com/?v=${query.v}`);
+                if (!response.ok) throw new Error();
 
-            const html = await response.text();
+                const html = await response.text();
 
-            if (!VALID_METADATA.test(html)) throw new Error();
+                if (!VALID_METADATA.test(html)) throw new Error();
 
-            const encryptedString = html.match(VALID_METADATA)![1];
+                encryptedString = html.match(VALID_METADATA)![1];
+                await redis.setex(query.v, 86400, encryptedString);
+            }
 
-            const htmlCoreFile = Bun.file("public/core.html");
-            const htmlCore = await htmlCoreFile.text();
+            const htmlFile = Bun.file(TEMPLATE_PATH);
+            const htmlCore = await htmlFile.text();
 
             return htmlCore.replace("[[DATA]]", encryptedString);
-        } catch (error) {
-            set.status = 500;
-            return "E::500";
+        } catch (_) {
+            return error(500);
         }
     },
     {

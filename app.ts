@@ -1,17 +1,15 @@
-import { Elysia, t } from 'elysia'
-import { html } from '@elysiajs/html'
-import { staticPlugin } from '@elysiajs/static'
+import { Elysia } from "elysia";
+import { html } from "@elysiajs/html";
+import { staticPlugin } from "@elysiajs/static";
 
-import appRoute from './routes'
+import appRoute from "./routes";
 
 const app = new Elysia()
     .use(html())
     .use(staticPlugin({ prefix: "/" }))
     .use(appRoute)
-    .listen(5001)
+    .listen(5001);
 
-export default app.fetch
+export default app.fetch;
 
-console.log(
-    `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-)
+console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
