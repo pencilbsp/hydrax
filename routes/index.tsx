@@ -13,7 +13,6 @@ appRoute.get(
         try {
             let encryptedString = await redis.get(query.v);
             if (!encryptedString) {
-                console.log(`https://abysscdn.com/?v=${query.v}`);
                 const response = await fetch(`https://abysscdn.com/?v=${query.v}`);
                 if (!response.ok) throw new Error();
 
