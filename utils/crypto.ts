@@ -1,4 +1,4 @@
-import { VideoObject } from "./Video";
+import { VideoObject } from "./video";
 
 export class CryptoHelper {
     private textEncoder: TextEncoder;

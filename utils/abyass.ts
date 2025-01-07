@@ -2,10 +2,10 @@ import { dirname, join } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { readdir, rm, unlink, mkdir } from "node:fs/promises";
 
-import { generateKey } from "./Utils";
-import { CryptoHelper } from "./Crypto";
-import { Semaphore } from "./Semaphore";
-import { SimpleVideo, VideoObject } from "./Video";
+import { generateKey } from "./utils";
+import { CryptoHelper } from "./crypto";
+import { Semaphore } from "./semaphore";
+import { SimpleVideo, VideoObject } from "./video";
 
 export interface Config {
     resolution: string;
@@ -88,11 +88,15 @@ class Abyass {
     }
 
     private async *requestSegment(url: string, body: string, chunkSize: number = 65536) {
+        console.log(url, JSON.stringify({ hash: body }))
+
         const response = await fetch(url, {
             method: "POST",
             body: JSON.stringify({ hash: body }),
             headers: { "content-type": "application/json" },
         });
+
+        console.log(response.headers)
 
         if (!response.ok) {
             throw new Error(`Failed to request segment: ${response.statusText}`);
@@ -234,9 +238,9 @@ class Abyass {
                 for await (const chunk of chunks) {
                     const array = isHeader
                         ? await (() => {
-                              isHeader = false;
-                              return this.cryptoHelper.decrypt(chunk);
-                          })()
+                            isHeader = false;
+                            return this.cryptoHelper.decrypt(chunk);
+                        })()
                         : chunk;
 
                     writer.write(array);
@@ -273,6 +277,7 @@ class Abyass {
         await this.fetchVideoResponse();
         this.extractEncryptedString();
         this.videoObject = CryptoHelper.decryptString(this.encryptedString, Abyass.DECRYPTION_KEY);
+        console.log(this.videoObject)
     }
 }
 

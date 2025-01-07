@@ -1,0 +1,1 @@
+self.importScripts('https://iamcdn.net/player/sw.bundle.js');

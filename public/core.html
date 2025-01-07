@@ -1,0 +1,86 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/css/styles.css">
+<script src="/js/jwplayer.min.js"></script>
+<script src="/js/jwpsrv.js"></script>
+<script src="/js/jwplayer.core.controls.html5.js"></script>
+<div id="player">
+    <div class="loader"><span></span></div>
+</div>
+<script src="/js/core.bundle.js"></script>
+<script>
+    const isTouchScreen = "ontouchstart" in window || "onmsgesturechange" in window;
+    const isUseExtension =
+        "functionsetInterval(){[nativecode]}" != setInterval.toString().replace(/( |\n)/g, "") ||
+        "functionsetTimeout(){[nativecode]}" != setTimeout.toString().replace(/( |\n)/g, "") ||
+        "functionopen(){[nativecode]}" != window.open.toString().replace(/( |\n)/g, "") ||
+        "functionfetch(){[nativecode]}" != fetch.toString().replace(/( |\n)/g, "");
+    function getParameterByName(name = null, url = window.location.href) {
+        if (!url || !name) return null;
+        name = name.replace(/[\[\]]/g, "\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+        var results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return "";
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+    function loadScript(url = null) {
+        return new Promise((resolve) => {
+            if (!url) return resolve(false);
+            var script = document.createElement("script");
+            script.src = url;
+            script.onload = () => {
+                resolve(true);
+            };
+            script.onerror = () => {
+                resolve(false);
+            };
+            return document.head.appendChild(script);
+        });
+    }
+    function ping(name = null, params = {}) {
+        if (!name) return;
+        var url = "https://hello.idocdn.com:3016/" + name + ".jpg";
+        url += "?" + new URLSearchParams(params).toString();
+        var createElm = document.createElement("img");
+        createElm.src = url;
+        createElm.style.display = "none";
+        document.body.appendChild(createElm);
+        createElm.onerror = () => createElm.remove();
+        createElm.onload = () => createElm.remove();
+    }
+</script>
+<script>
+    window.addEventListener("load", async () => {
+        if (!window.SoTrym) {
+            var reload = await loadScript("/js/core.lite.js");
+            if (!reload || !window.SoTrym)
+                return document.write(
+                    "Your browser is interfering with the loading of essential assets. Please consider disabling extensions and ad blockers, or using an alternative browser."
+                );
+        }
+        (() => {
+            const options = JSON.parse(atob("[[DATA]]"));
+            var sub_url = getParameterByName("sub") || getParameterByName("subtitle") || null;
+            var sub_lang = getParameterByName("lang") || getParameterByName("sub-lang") || null;
+            if (sub_url) {
+                if (!options.tracks) options.tracks = [];
+                options.tracks.push({
+                    file: "https://proxy.iamcdn.net/sub?url=" + decodeURIComponent(sub_url),
+                    label: decodeURIComponent(sub_lang || "Default"),
+                    default: true,
+                });
+            }
+            // var poster = getParameterByName("thumbnail") || getParameterByName("image") || null;
+            // if (poster) options.image = poster;
+            // if (options.image) {
+            //     var overlay = document.getElementById("overlay");
+            //     if (overlay) {
+            //         overlay.style.background = "#000 url('" + options.image + "') center center no-repeat";
+            //         overlay.style["background-size"] = "contain";
+            //     }
+            // }
+            SoTrym("player").setup(options);
+        })();
+    });
+</script>

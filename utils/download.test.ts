@@ -1,7 +1,7 @@
 import { unlink } from "fs/promises";
 import { describe, test, expect } from "bun:test";
 
-import Abyass, { Config } from "./Abyass";
+import Abyass, { Config } from "./abyass";
 
 describe("Abyass", () => {
     test(

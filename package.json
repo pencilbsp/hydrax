@@ -1,6 +1,15 @@
 {
-  "devDependencies": {
-    "@types/bun": "^1.1.14",
-    "@types/node": "^22.10.1"
-  }
+    "devDependencies": {
+        "@types/bun": "^1.1.14",
+        "@types/node": "^22.10.1"
+    },
+    "dependencies": {
+        "@elysiajs/html": "^1.2.0",
+        "@elysiajs/static": "^1.2.0",
+        "@kitajs/ts-html-plugin": "^4.1.1",
+        "elysia": "^1.2.10"
+    },
+    "scripts": {
+        "dev": "bun --watch run app.ts"
+    }
 }
