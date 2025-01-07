@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 
-import redis from "../utils/redis";
+import redis, { key } from "../utils/redis";
 
 const TEMPLATE_PATH = "public/core.html";
 const VALID_METADATA = /JSON\.parse\(atob\("([^"]+)"\)\)/;
@@ -11,7 +11,7 @@ appRoute.get(
     "/",
     async ({ query, error }) => {
         try {
-            let encryptedString = await redis.get(query.v);
+            let encryptedString = await redis.get(key(query.v));
             if (!encryptedString) {
                 const response = await fetch(`https://abysscdn.com/?v=${query.v}`);
                 if (!response.ok) throw new Error();
@@ -21,7 +21,7 @@ appRoute.get(
                 if (!VALID_METADATA.test(html)) throw new Error();
 
                 encryptedString = html.match(VALID_METADATA)![1];
-                await redis.setex(query.v, 86400, encryptedString);
+                await redis.setex(key(query.v), 86400, encryptedString);
             }
 
             const htmlFile = Bun.file(TEMPLATE_PATH);
