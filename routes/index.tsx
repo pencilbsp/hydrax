@@ -4,6 +4,7 @@ import redis, { key } from "../utils/redis";
 
 const TEMPLATE_PATH = "public/core.html";
 const VALID_METADATA = /JSON\.parse\(atob\("([^"]+)"\)\)/;
+const MAX_AGE = 86400 / 4;
 
 const appRoute = new Elysia();
 
@@ -21,13 +22,13 @@ appRoute.get(
                 if (!VALID_METADATA.test(html)) throw new Error();
 
                 encryptedString = html.match(VALID_METADATA)![1];
-                await redis.setex(key(query.v), 86400, encryptedString);
+                await redis.setex(key(query.v), MAX_AGE, encryptedString);
             }
 
             const htmlFile = Bun.file(TEMPLATE_PATH);
             const htmlCore = await htmlFile.text();
 
-            set.headers["cache-control"] = "public, max-age=86400";
+            set.headers["cache-control"] = `public, max-age=${MAX_AGE}`;
             return htmlCore.replace("[[DATA]]", encryptedString);
         } catch (_) {
             return error(500);
