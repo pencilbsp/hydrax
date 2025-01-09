@@ -9,7 +9,7 @@ const appRoute = new Elysia();
 
 appRoute.get(
     "/",
-    async ({ query, error }) => {
+    async ({ query, error, set }) => {
         try {
             let encryptedString = await redis.get(key(query.v));
             if (!encryptedString) {
@@ -27,6 +27,7 @@ appRoute.get(
             const htmlFile = Bun.file(TEMPLATE_PATH);
             const htmlCore = await htmlFile.text();
 
+            set.headers["cache-control"] = "public, max-age=86400";
             return htmlCore.replace("[[DATA]]", encryptedString);
         } catch (_) {
             return error(500);
