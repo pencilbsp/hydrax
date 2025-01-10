@@ -4,7 +4,7 @@ import redis, { key } from "../utils/redis";
 
 const TEMPLATE_PATH = "public/core.html";
 const VALID_METADATA = /JSON\.parse\(atob\("([^"]+)"\)\)/;
-const MAX_AGE = 86400 / 8;
+const MAX_AGE = 86400 / 12;
 
 const appRoute = new Elysia();
 
