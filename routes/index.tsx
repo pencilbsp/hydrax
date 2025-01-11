@@ -32,6 +32,7 @@ appRoute.get(
             set.headers["cache-control"] = `public, max-age=${MAX_AGE}`;
             return htmlCore.replace("[[DATA]]", encryptedString);
         } catch (_) {
+            set.headers["cache-control"] = `private, max-age=60}`;
             return (
                 <body>
                     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6S6Q1BPHGP"></script>
