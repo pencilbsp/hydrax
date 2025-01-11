@@ -1,4 +1,5 @@
 import { Elysia, t } from "elysia";
+import { Html } from "@elysiajs/html";
 
 import redis, { key } from "../utils/redis";
 
@@ -31,7 +32,15 @@ appRoute.get(
             set.headers["cache-control"] = `public, max-age=${MAX_AGE}`;
             return htmlCore.replace("[[DATA]]", encryptedString);
         } catch (_) {
-            return error(500);
+            return (
+                <body>
+                    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6S6Q1BPHGP"></script>
+                    <script>
+                        {`window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-6S6Q1BPHGP');`}
+                    </script>
+                    <h1>Hihi</h1>
+                </body>
+            );
         }
     },
     {
