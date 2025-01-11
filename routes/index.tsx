@@ -11,7 +11,7 @@ const appRoute = new Elysia();
 
 appRoute.get(
     "/",
-    async ({ query, error, set }) => {
+    async ({ query, set }) => {
         try {
             let encryptedString = await redis.get(key(query.v));
             if (!encryptedString) {
@@ -45,7 +45,7 @@ appRoute.get(
     },
     {
         query: t.Object({
-            v: t.String(),
+            v: t.Optional(t.String()),
         }),
     }
 );
