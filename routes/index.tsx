@@ -31,13 +31,13 @@ appRoute.get(
 
             set.headers["cache-control"] = `public, max-age=${MAX_AGE}`;
 
-            const hours = new Date().getHours();
+            // const hours = new Date().getHours();
 
             // if (hours > 0 && hours < 6) {
-            htmlCore = htmlCore.replace(
-                "<!-- [[ADS]] -->",
-                '<script data-cfasync="false" async type="text/javascript" src="//wr.brandonketting.com/rvbeiCXzz5rleLaq/83817"></script>'
-            );
+            // htmlCore = htmlCore.replace(
+            //     "<!-- [[ADS]] -->",
+            //     '<script data-cfasync="false" async type="text/javascript" src="//wr.brandonketting.com/rvbeiCXzz5rleLaq/83817"></script>'
+            // );
             // } else {
             //     htmlCore.replace("<!-- [[ADS]] -->", "");
             // }
