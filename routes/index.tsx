@@ -16,11 +16,11 @@ appRoute.get(
             let encryptedString = await redis.get(key(query.v));
             if (!encryptedString) {
                 const response = await fetch(`https://abysscdn.com/?v=${query.v}`);
-                if (!response.ok) throw new Error();
+                if (!response.ok) throw new Error(response.statusText);
 
                 const html = await response.text();
 
-                if (!VALID_METADATA.test(html)) throw new Error();
+                if (!VALID_METADATA.test(html)) throw new Error('File not found.');
 
                 encryptedString = html.match(VALID_METADATA)![1];
                 await redis.setex(key(query.v), MAX_AGE, encryptedString);
@@ -43,7 +43,7 @@ appRoute.get(
             // }
 
             return htmlCore.replace("[[DATA]]", encryptedString);
-        } catch (_) {
+        } catch (error) {
             set.headers["cache-control"] = `private, max-age=60}`;
             return (
                 <body>
@@ -52,6 +52,7 @@ appRoute.get(
                         {`window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-6S6Q1BPHGP');`}
                     </script>
                     <h1>Hihi</h1>
+                    <p>{error.message}</p>
                 </body>
             );
         }

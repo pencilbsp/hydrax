@@ -88,15 +88,11 @@ class Abyass {
     }
 
     private async *requestSegment(url: string, body: string, chunkSize: number = 65536) {
-        console.log(url, JSON.stringify({ hash: body }))
-
         const response = await fetch(url, {
             method: "POST",
             body: JSON.stringify({ hash: body }),
             headers: { "content-type": "application/json" },
         });
-
-        console.log(response.headers)
 
         if (!response.ok) {
             throw new Error(`Failed to request segment: ${response.statusText}`);
