@@ -3,9 +3,11 @@ import { Html } from "@elysiajs/html";
 
 import redis, { key } from "../utils/redis";
 
+const MAX_AGE = 86400 / 12;
+const PROXY = process.env['PROXY'];
 const TEMPLATE_PATH = "public/core.html";
 const VALID_METADATA = /JSON\.parse\(atob\("([^"]+)"\)\)/;
-const MAX_AGE = 86400 / 12;
+
 
 const appRoute = new Elysia();
 
@@ -15,7 +17,7 @@ appRoute.get(
         try {
             let encryptedString = await redis.get(key(query.v));
             if (!encryptedString) {
-                const response = await fetch(`https://abysscdn.com/?v=${query.v}`);
+                const response = await fetch(`https://abysscdn.com/?v=${query.v}`, { proxy: PROXY });
                 if (!response.ok) throw new Error(response.statusText);
 
                 const html = await response.text();
