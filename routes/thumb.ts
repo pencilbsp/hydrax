@@ -1,4 +1,5 @@
 import { Elysia, t } from "elysia";
+import { HYDRAX_CDN } from "../config";
 
 const thumbRoute = new Elysia({ prefix: "/thumb" });
 
@@ -6,8 +7,7 @@ thumbRoute.get(
     "/:vid/:fileName",
     async ({ params: { vid, fileName } }) => {
         const thumbUrl = "https://cdn.freeimagecdn.net/" + vid + "/" + fileName;
-        const response = await fetch(thumbUrl, { headers: { referer: "https://abysscdn.com/" } });
-        return response;
+        return fetch(thumbUrl, { headers: { referer: `${HYDRAX_CDN}/` } });
     },
     {
         params: t.Object({

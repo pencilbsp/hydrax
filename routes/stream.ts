@@ -1,13 +1,14 @@
 import { Elysia, t } from "elysia";
+import { HYDRAX_CDN } from "../config";
 
-const referer = "https://abysscdn.com/";
+const referer = `${HYDRAX_CDN}/`;
 const streamRoute = new Elysia({ prefix: "/stream" });
 
 streamRoute.get(
     "/:domain/:vid/:fileName",
     async ({ params: { vid, fileName, domain }, headers }) => {
         const thumbUrl = `https://${domain.replaceAll("_", ".")}/${vid}/${fileName}`;
-        const response = await fetch(thumbUrl, { redirect: "manual", headers: { referer } });
+        const response = await fetch(thumbUrl, { redirect: "manual", headers: { referer, origin: HYDRAX_CDN } });
         const location = response.headers.get("location");
 
         if (location) {
