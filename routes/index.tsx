@@ -4,10 +4,15 @@ import { Html } from "@elysiajs/html";
 import redis, { key } from "../utils/redis";
 
 const MAX_AGE = 86400 / 12;
-const PROXY = process.env['PROXY'];
+const PROXY = process.env["PROXY"];
 const TEMPLATE_PATH = "public/core.html";
 const VALID_METADATA = /JSON\.parse\(atob\("([^"]+)"\)\)/;
 
+declare global {
+    interface RequestInit {
+        proxy?: string; // Thêm hỗ trợ proxy vào type của fetch
+    }
+}
 
 const appRoute = new Elysia();
 
@@ -18,11 +23,12 @@ appRoute.get(
             let encryptedString = await redis.get(key(query.v));
             if (!encryptedString) {
                 const response = await fetch(`https://abysscdn.com/?v=${query.v}`, { proxy: PROXY });
+
                 if (!response.ok) throw new Error(response.statusText);
 
                 const html = await response.text();
 
-                if (!VALID_METADATA.test(html)) throw new Error('File not found.');
+                if (!VALID_METADATA.test(html)) throw new Error("File not found.");
 
                 encryptedString = html.match(VALID_METADATA)![1];
                 await redis.setex(key(query.v), MAX_AGE, encryptedString);

@@ -4,6 +4,7 @@ import { staticPlugin } from "@elysiajs/static";
 
 import appRoute from "./routes";
 import thumbRoute from "./routes/thumb";
+import proxyRoute from "./routes/proxy";
 import streamRoute from "./routes/stream";
 
 const PORT = Number(process.env.PORT || 5001);
@@ -12,6 +13,7 @@ const app = new Elysia()
     .use(html())
     .use(staticPlugin({ prefix: "/" }))
     .use(appRoute)
+    .use(proxyRoute)
     .use(thumbRoute)
     .use(streamRoute)
     .listen(PORT);
