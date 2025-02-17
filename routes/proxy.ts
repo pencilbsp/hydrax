@@ -17,7 +17,7 @@ export default new Elysia({ prefix: "/p" }).all(
             },
         });
 
-        return Readable.fromWeb(response.body);
+        return Readable.from(response.body as any);
     },
     {
         query: t.Object({

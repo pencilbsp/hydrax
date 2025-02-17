@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { HYDRAX_CDN } from "../config";
 
-const thumbRoute = new Elysia({ prefix: "/thumb" });
+const thumbRoute = new Elysia({ prefix: "/t" });
 
 thumbRoute.get(
     "/:vid/:fileName",
