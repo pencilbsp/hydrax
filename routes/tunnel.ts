@@ -3,8 +3,8 @@ import { Elysia, t } from "elysia";
 
 import { HYDRAX_CDN, USER_AGENT } from "../config";
 
-export default new Elysia({ prefix: "/tunnel" }).all(
-    "/*",
+export default new Elysia({ prefix: "/tunnel" }).get(
+    "/",
     async ({ request, params, query }) => {
         const url = "https:" + query.d;
 
@@ -17,7 +17,7 @@ export default new Elysia({ prefix: "/tunnel" }).all(
             },
         });
 
-        return response;
+        return Readable.from(response.body as any);
     },
     {
         query: t.Object({
