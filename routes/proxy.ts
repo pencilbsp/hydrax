@@ -6,8 +6,10 @@ import { HYDRAX_CDN, USER_AGENT } from "../config";
 export default new Elysia({ prefix: "/p" }).all(
     "/*",
     async ({ request, params, query }) => {
-        const domain = atob(query.d.replaceAll("_", "/").replaceAll("-", "+"));
-        const response = await fetch(`https:${domain}/${params["*"]}`, {
+        let domain = atob(query.d.replaceAll("_", "/").replaceAll("-", "+"));
+        if (!domain.startsWith("https")) domain = "https:" + domain;
+
+        const response = await fetch(`${domain}/${params["*"]}`, {
             method: request.method,
             body: request.body,
             headers: {
