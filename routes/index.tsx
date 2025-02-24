@@ -18,8 +18,9 @@ const appRoute = new Elysia();
 
 appRoute.get(
     "/",
-    async ({ query, set }) => {
+    async ({ query, set, redirect }) => {
         try {
+            return redirect(`https://abysscdn.com/?v=${query.v}`)
             let encryptedString = await redis.get(key(query.v));
             if (!encryptedString) {
                 const response = await fetch(`https://abysscdn.com/?v=${query.v}`, { proxy: PROXY });
