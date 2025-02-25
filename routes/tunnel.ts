@@ -5,7 +5,7 @@ import { HYDRAX_CDN, USER_AGENT } from "../config";
 
 export default new Elysia({ prefix: "/tunnel" }).get(
     "/",
-    async ({ request, params, query }) => {
+    async ({ request, query }) => {
         const url = "https:" + query.d;
 
         const response = await fetch(url, {

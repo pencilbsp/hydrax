@@ -1,3 +1,5 @@
+import { JSDOM } from "jsdom";
+import { Deobfuscator } from "deobfuscator";
 import { dirname, join } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { readdir, rm, unlink, mkdir } from "node:fs/promises";
@@ -6,6 +8,8 @@ import { generateKey } from "./utils";
 import { CryptoHelper } from "./crypto";
 import { Semaphore } from "./semaphore";
 import { SimpleVideo, VideoObject } from "./video";
+
+const PROXY = process.env["PROXY"];
 
 export interface Config {
     resolution: string;
@@ -16,12 +20,12 @@ export interface Config {
 
 class Abyass {
     private html: string;
-    private encryptedString: string;
+    public encryptedString: string;
     private videoObject: VideoObject;
     private cryptoHelper: CryptoHelper;
     private static readonly SEGMENT_SIZE = 2097152;
     public readonly DEFAULT_CONCURRENT_DOWNLOAD_LIMIT = 4;
-    public static readonly VALID_METADATA = /JSON\.parse\(atob\("([^"]+)"\)\)/;
+    public static readonly VALID_METADATA = /JSON\.parse\(atob\(["']([^"]+)["']\)\)/;
     public static readonly DECRYPTION_KEY = "RB0fpH8ZEyVLkv7c2i6MAJ5u3IKFDxlS1NTsnGaqmXYdUrtzjwObCgQP94hoeW+/=";
     constructor(private readonly videoId: string) {
         this.videoId = videoId;
@@ -29,7 +33,7 @@ class Abyass {
     }
 
     private async fetchVideoResponse() {
-        const response = await fetch(`https://abysscdn.com/?v=${this.videoId}`);
+        const response = await fetch(`https://abysscdn.com/?v=${this.videoId}`, { proxy: PROXY });
         if (!response.ok) {
             throw new Error(`Failed to fetch video response: ${response.statusText}`);
         }
@@ -37,16 +41,27 @@ class Abyass {
         this.html = await response.text();
     }
 
-    private extractEncryptedString() {
+    private async extractEncryptedString() {
         if (!this.html) {
             throw new Error("HTML content not fetched");
         }
 
-        if (!Abyass.VALID_METADATA.test(this.html)) {
+        const {
+            window: { document },
+        } = new JSDOM(this.html);
+
+        const script = Array.from(document.querySelectorAll("script")).find(({ textContent }) =>
+            textContent.includes("SoTrym(")
+        );
+
+        const deobfuscator = new Deobfuscator();
+        const content = await deobfuscator.deobfuscateSource(script.textContent);
+
+        if (!Abyass.VALID_METADATA.test(content)) {
             throw new Error("Encrypted string not found");
         }
 
-        this.encryptedString = this.html.match(Abyass.VALID_METADATA)![1];
+        this.encryptedString = content.match(Abyass.VALID_METADATA)![1];
     }
 
     private getSegmentUrl() {
@@ -171,7 +186,11 @@ class Abyass {
 
             for (const file of files) {
                 const filePath = join(tempFolder, file);
-                if (statSync(filePath).isFile() && /segment_\d+/.test(file) && statSync(filePath).size < Abyass.SEGMENT_SIZE) {
+                if (
+                    statSync(filePath).isFile() &&
+                    /segment_\d+/.test(file) &&
+                    statSync(filePath).size < Abyass.SEGMENT_SIZE
+                ) {
                     await unlink(filePath);
                 } else {
                     const num = parseInt(file.replace("segment_", ""));
@@ -234,9 +253,9 @@ class Abyass {
                 for await (const chunk of chunks) {
                     const array = isHeader
                         ? await (() => {
-                            isHeader = false;
-                            return this.cryptoHelper.decrypt(chunk);
-                        })()
+                              isHeader = false;
+                              return this.cryptoHelper.decrypt(chunk);
+                          })()
                         : chunk;
 
                     writer.write(array);
@@ -271,9 +290,8 @@ class Abyass {
 
     async init() {
         await this.fetchVideoResponse();
-        this.extractEncryptedString();
+        await this.extractEncryptedString();
         this.videoObject = CryptoHelper.decryptString(this.encryptedString, Abyass.DECRYPTION_KEY);
-        console.log(this.videoObject)
     }
 }
 

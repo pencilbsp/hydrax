@@ -10,6 +10,8 @@ describe("Abyass", () => {
             const abyass = new Abyass("59xCrFH1w");
             await abyass.init();
 
+            console.log(abyass.encryptedString)
+
             const metadata = abyass.getVideoObject();
 
             expect(metadata).toBeObject();
