@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import { Deobfuscator } from "deobfuscator";
+// import { Deobfuscator } from "deobfuscator";
 import { dirname, join } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { readdir, rm, unlink, mkdir } from "node:fs/promises";
@@ -51,17 +51,32 @@ class Abyass {
         } = new JSDOM(this.html);
 
         const script = Array.from(document.querySelectorAll("script")).find(({ textContent }) =>
-            textContent.includes("SoTrym(")
+            textContent.includes("SoTrym")
         );
 
-        const deobfuscator = new Deobfuscator();
-        const content = await deobfuscator.deobfuscateSource(script.textContent);
+        const valid =
+            /(.*?)(window\[\w+\(\d+\).*?)(async\(\)=>{.*?;)(if\(!window.*?){(var\s\w=\w;)(.*?SoTrym.*?}}\)\(\))(.*?;)/;
 
-        if (!Abyass.VALID_METADATA.test(content)) {
+        if (!valid.test(script.textContent)) {
             throw new Error("Encrypted string not found");
         }
 
-        this.encryptedString = content.match(Abyass.VALID_METADATA)![1];
+        const va = script.textContent.match(/\(atob,([\w]\[[\w]\(\d+\)\])\)/)[1];
+
+        var encryptedString = "";
+
+        const patchedScript = script.textContent.replace(valid, `$1($3$5encryptedString=${va};})();`);
+
+        eval(patchedScript);
+
+        // const deobfuscator = new Deobfuscator();
+        // const content = await deobfuscator.deobfuscateSource(script.textContent);
+
+        // if (!Abyass.VALID_METADATA.test(content)) {
+        //     throw new Error("Encrypted string not found");
+        // }
+
+        this.encryptedString = encryptedString;
     }
 
     private getSegmentUrl() {
@@ -292,6 +307,7 @@ class Abyass {
         await this.fetchVideoResponse();
         await this.extractEncryptedString();
         this.videoObject = CryptoHelper.decryptString(this.encryptedString, Abyass.DECRYPTION_KEY);
+        console.log(this.videoObject);
     }
 }
 
