@@ -46,6 +46,8 @@ class Abyass {
             throw new Error("HTML content not fetched");
         }
 
+        // console.log(this.html);
+
         const {
             window: { document },
         } = new JSDOM(this.html);
@@ -54,20 +56,22 @@ class Abyass {
             textContent.includes("SoTrym")
         );
 
-        const valid =
-            /(.*?)(window\[\w+\(\d+\).*?)(async\(\)=>{.*?;)(if\(!window.*?){(var\s\w=\w;)(.*?SoTrym.*?}}\)\(\))(.*?;)/;
+        // const valid =
+        //     /(.*?)(window\[\w+\(\d+\).*?)(async\(\)=>{.*?;)(if\(!window.*?){(var\s\w=\w;)(.*?SoTrym.*?}}\)\(\))(.*?;)/;
 
-        if (!valid.test(script.textContent)) {
-            throw new Error("Encrypted string not found");
-        }
+        // if (!valid.test(script.textContent)) {
+        //     throw new Error("Encrypted string not found");
+        // }
 
-        const va = script.textContent.match(/\(atob,([\w]\[[\w]\(\d+\)\])\)/)[1];
+        // const va = script.textContent.match(/\(atob,([\w]\[[\w]\(\d+\)\])\)/)[1];
 
-        var encryptedString = "";
+        // var encryptedString = "";
 
-        const patchedScript = script.textContent.replace(valid, `$1($3$5encryptedString=${va};})();`);
+        // const patchedScript = script.textContent.replace(valid, `$1($3$5encryptedString=${va};})();`);
 
-        eval(patchedScript);
+        // eval(patchedScript);
+
+        // ---------------
 
         // const deobfuscator = new Deobfuscator();
         // const content = await deobfuscator.deobfuscateSource(script.textContent);
@@ -75,6 +79,27 @@ class Abyass {
         // if (!Abyass.VALID_METADATA.test(content)) {
         //     throw new Error("Encrypted string not found");
         // }
+
+        // ---------------
+
+        const vRegex = /((?:(?:[()]|)(\w)\(\d+\)\+){16,}.*?),/;
+        const fRegex = /(function \w\(\){for.*?((?:(?:[()]|)(\w)\(\d+\)\+){16,}.*?),)/;
+
+        const functionContent = script.textContent.match(fRegex)[1];
+
+        var encryptedString = "";
+        if (functionContent) {
+            let initFunction = script.textContent.slice(0, script.textContent.search(fRegex)) + ";";
+
+            const [, hashedValue, functionName] = functionContent.match(vRegex);
+
+            const nextRegex = new RegExp(`(var\\s${functionName}=\\w),`);
+            initFunction += functionContent.match(nextRegex)[1] + `;encryptedString=${hashedValue}`;
+
+            eval(initFunction);
+        } else {
+            throw new Error("Encrypted string not found");
+        }
 
         this.encryptedString = encryptedString;
     }
