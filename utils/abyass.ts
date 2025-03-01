@@ -46,8 +46,6 @@ class Abyass {
             throw new Error("HTML content not fetched");
         }
 
-        // console.log(this.html);
-
         const {
             window: { document },
         } = new JSDOM(this.html);
@@ -83,6 +81,7 @@ class Abyass {
         // ---------------
 
         const vRegex = /((?:(?:[()]|)(\w)\(\d+\)\+){16,}.*?),/;
+        const vbRegex = /(function\s\w\(\)\{var\s\w=\[".*?}\)\(\)})/;
         const fRegex = /(function \w\(\){for.*?((?:(?:[()]|)(\w)\(\d+\)\+){16,}.*?),)/;
 
         const functionContent = script.textContent.match(fRegex)[1];
@@ -96,6 +95,14 @@ class Abyass {
             const nextRegex = new RegExp(`(var\\s${functionName}=\\w),`);
             initFunction += functionContent.match(nextRegex)[1] + `;encryptedString=${hashedValue}`;
 
+            if (!vbRegex.test(initFunction) && vbRegex.test(script.textContent)) {
+                const vb = script.textContent.match(vbRegex)[1];
+                initFunction = vb + ";" + initFunction;
+            }
+
+            // console.log(script.textContent);
+            // console.log("-----------------------");
+            // console.log(initFunction);
             eval(initFunction);
         } else {
             throw new Error("Encrypted string not found");
@@ -332,7 +339,7 @@ class Abyass {
         await this.fetchVideoResponse();
         await this.extractEncryptedString();
         this.videoObject = CryptoHelper.decryptString(this.encryptedString, Abyass.DECRYPTION_KEY);
-        console.log(this.videoObject);
+        // console.log(this.videoObject);
     }
 }
 

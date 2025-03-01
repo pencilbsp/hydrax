@@ -57,6 +57,7 @@ appRoute.get(
 
             return htmlCore.replace("[[DATA]]", encryptedString);
         } catch (error) {
+            console.log(error);
             return redirect(`https://abysscdn.com/?v=${query.v}`);
         }
     },
