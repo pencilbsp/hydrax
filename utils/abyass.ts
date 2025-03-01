@@ -80,6 +80,7 @@ class Abyass {
 
         // ---------------
 
+        const vaRegex = /(function\s\w\(\w,\w\){var.*?,\w\)})/;
         const vRegex = /((?:(?:[()]|)(\w)\(\d+\)\+){16,}.*?),/;
         const vbRegex = /(function\s\w\(\)\{var\s\w=\[".*?}\)\(\)})/;
         const fRegex = /(function \w\(\){for.*?((?:(?:[()]|)(\w)\(\d+\)\+){16,}.*?),)/;
@@ -100,9 +101,14 @@ class Abyass {
                 initFunction = vb + ";" + initFunction;
             }
 
-            // console.log(script.textContent);
-            // console.log("-----------------------");
-            // console.log(initFunction);
+            if (!vaRegex.test(initFunction) && vaRegex.test(script.textContent)) {
+                const va = script.textContent.match(vbRegex)[1];
+                initFunction = va + ";" + initFunction;
+            }
+
+            console.log(script.textContent);
+            console.log("-----------------------");
+            console.log(initFunction);
             eval(initFunction);
         } else {
             throw new Error("Encrypted string not found");
