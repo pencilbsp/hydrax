@@ -106,9 +106,9 @@ class Abyass {
                 initFunction = va + ";" + initFunction;
             }
 
-            console.log(script.textContent);
-            console.log("-----------------------");
-            console.log(initFunction);
+            // console.log(script.textContent);
+            // console.log("-----------------------");
+            // console.log(initFunction);
             eval(initFunction);
         } else {
             throw new Error("Encrypted string not found");
