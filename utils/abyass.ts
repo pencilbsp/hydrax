@@ -102,7 +102,7 @@ class Abyass {
             }
 
             if (!vaRegex.test(initFunction) && vaRegex.test(script.textContent)) {
-                const va = script.textContent.match(vbRegex)[1];
+                const va = script.textContent.match(vaRegex)[1];
                 initFunction = va + ";" + initFunction;
             }
 
