@@ -13,6 +13,7 @@
         "jsdom": "^26.0.0"
     },
     "scripts": {
-        "dev": "bun --watch run app.ts"
+        "dev": "bun --watch run app.ts",
+        "build": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile app app.ts"
     }
 }
