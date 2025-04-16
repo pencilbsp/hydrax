@@ -14,6 +14,6 @@
     },
     "scripts": {
         "dev": "bun --watch run app.ts",
-        "build": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile app app.ts"
+        "build": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile ./build/app app.ts"
     }
 }
