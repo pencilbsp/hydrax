@@ -25,7 +25,7 @@ class Abyass {
     private cryptoHelper: CryptoHelper;
     private static readonly SEGMENT_SIZE = 2097152;
     public readonly DEFAULT_CONCURRENT_DOWNLOAD_LIMIT = 4;
-    public static readonly VALID_METADATA = /JSON\.parse\(atob\(["']([^"]+)["']\)\)/;
+    public static readonly VALID_METADATA = /JSON\.parse\((?:window\.|)atob\(["']([^"]+)["']\)\)/;
     public static readonly DECRYPTION_KEY = "RB0fpH8ZEyVLkv7c2i6MAJ5u3IKFDxlS1NTsnGaqmXYdUrtzjwObCgQP94hoeW+/=";
     constructor(private readonly videoId: string) {
         this.videoId = videoId;
@@ -44,6 +44,11 @@ class Abyass {
     private async extractEncryptedString() {
         if (!this.html) {
             throw new Error("HTML content not fetched");
+        }
+
+        if (Abyass.VALID_METADATA.test(this.html)) {
+            this.encryptedString = this.html.match(Abyass.VALID_METADATA)[1];
+            return;
         }
 
         const {
@@ -345,7 +350,7 @@ class Abyass {
         await this.fetchVideoResponse();
         await this.extractEncryptedString();
         this.videoObject = CryptoHelper.decryptString(this.encryptedString, Abyass.DECRYPTION_KEY);
-        // console.log(this.videoObject);
+        console.log(this.videoObject);
     }
 }
 
