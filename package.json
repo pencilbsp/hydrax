@@ -10,7 +10,8 @@
         "@kitajs/ts-html-plugin": "^4.1.1",
         "elysia": "^1.2.10",
         "ioredis": "^5.4.2",
-        "jsdom": "^26.0.0"
+        "jsdom": "^26.0.0",
+        "synchrony": "https://github.com/pencilbsp/synchrony.git"
     },
     "scripts": {
         "dev": "bun --watch run app.ts",

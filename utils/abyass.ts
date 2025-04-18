@@ -1,4 +1,5 @@
 import { JSDOM } from "jsdom";
+import { Deobfuscator } from "synchrony";
 // import { Deobfuscator } from "deobfuscator";
 import { dirname, join } from "node:path";
 import { existsSync, statSync } from "node:fs";
@@ -51,6 +52,8 @@ class Abyass {
             return;
         }
 
+        // console.log(this.html);
+
         const {
             window: { document },
         } = new JSDOM(this.html);
@@ -76,12 +79,13 @@ class Abyass {
 
         // ---------------
 
-        // const deobfuscator = new Deobfuscator();
-        // const content = await deobfuscator.deobfuscateSource(script.textContent);
+        const deobfuscator = new Deobfuscator();
+        const content = await deobfuscator.deobfuscateSource(script.textContent);
 
-        // if (!Abyass.VALID_METADATA.test(content)) {
-        //     throw new Error("Encrypted string not found");
-        // }
+        if (/(?:var|let|const)\s\w\s=\s["'](\w{24,}_)["'];/.test(content)) {
+            this.encryptedString = content.match(/(?:var|let|const)\s\w\s=\s["'](\w{24,}_)["'];/)[1];
+            return;
+        }
 
         // ---------------
 
