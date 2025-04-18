@@ -82,8 +82,10 @@ class Abyass {
         const deobfuscator = new Deobfuscator();
         const content = await deobfuscator.deobfuscateSource(script.textContent);
 
-        if (/(?:var|let|const)\s\w\s=\s["'](\w{24,}_)["'];/.test(content)) {
-            this.encryptedString = content.match(/(?:var|let|const)\s\w\s=\s["'](\w{24,}_)["'];/)[1];
+        console.log(content);
+
+        if (/(?:var|let|const)\s\w\s=\s["'](.{24,}_)["'];/.test(content)) {
+            this.encryptedString = content.match(/(?:var|let|const)\s\w\s=\s["'](.{24,}_)["'];/)[1];
             return;
         }
 
