@@ -19,9 +19,11 @@ export interface VideoObject {
     md5_id: number;
     user_id: string;
     domain: string;
+    image?: string | null;
     ads: {
         pop: string[];
     };
+    tracker?: { url?: string }
 }
 
 export class SimpleVideo {

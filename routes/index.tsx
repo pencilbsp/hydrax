@@ -34,9 +34,9 @@ appRoute.get(
                 const abyass = new Abyass(query.v);
                 await abyass.init();
 
-                encryptedString = abyass.encryptedString;
+                encryptedString = abyass.downgradeEncryptedString() + "_";
 
-                await redis.setex(key(query.v), MAX_AGE, abyass.encryptedString);
+                await redis.setex(key(query.v), MAX_AGE, encryptedString);
             }
 
             const htmlFile = Bun.file(TEMPLATE_PATH);

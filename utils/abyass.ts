@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { readdir, rm, unlink, mkdir } from "node:fs/promises";
 
+import { makeUrl } from "./utils-type";
 import { generateKey } from "./utils";
 import { CryptoHelper } from "./crypto";
 import { Semaphore } from "./semaphore";
@@ -20,6 +21,7 @@ export interface Config {
 }
 
 class Abyass {
+    public version = 1;
     private html: string;
     public encryptedString: string;
     private videoObject: VideoObject;
@@ -34,7 +36,9 @@ class Abyass {
     }
 
     private async fetchVideoResponse() {
-        const response = await fetch(`https://abysscdn.com/?v=${this.videoId}`, { proxy: PROXY });
+        const response = await fetch(`https://abysscdn.com/?v=${this.videoId}`, {
+            proxy: PROXY,
+        });
         if (!response.ok) {
             throw new Error(`Failed to fetch video response: ${response.statusText}`);
         }
@@ -82,10 +86,25 @@ class Abyass {
         const deobfuscator = new Deobfuscator();
         const content = await deobfuscator.deobfuscateSource(script.textContent);
 
-        console.log(content);
+        // console.log(content);
 
         if (/(?:var|let|const)\s\w\s=\s["'](.{24,}_)["'];/.test(content)) {
             this.encryptedString = content.match(/(?:var|let|const)\s\w\s=\s["'](.{24,}_)["'];/)[1];
+
+            if (/(?:var|let|const)\s(\w)\s=\s{};/.test(content)) {
+                const _var = content.match(/(?:var|let|const)\s(\w)\s=\s{};/)[1];
+                const partent = new RegExp(
+                    `${_var}(?:[\\w.]+\\s=\\s(?:[\\{\\[](?:[\\s\\S]*?)[\\}\\]]|false|true|(?:['"].+['"])|(\\d+)));`,
+                    "g"
+                );
+                const matches = content.match(partent);
+                if (Array.isArray(matches)) {
+                    matches.unshift(`var ${_var} = {};`);
+                    matches.push(`this.videoObject = ${_var};`);
+                    eval(matches.join("\n"));
+                }
+            }
+
             return;
         }
 
@@ -158,7 +177,10 @@ class Abyass {
         const ranges = this.generateRanges(simpleVideo.size);
 
         for (const [index, range] of ranges.entries()) {
-            const body = { ...simpleVideo, range: { start: range[0], end: range[1] } };
+            const body = {
+                ...simpleVideo,
+                range: { start: range[0], end: range[1] },
+            };
             const encryptedBody = await this.cryptoHelper.encrypt(JSON.stringify(body));
             fragmentList[index] = encryptedBody;
         }
@@ -352,11 +374,35 @@ class Abyass {
         return this.videoObject;
     }
 
+    getVersion() {
+        return this.version;
+    }
+
+    downgradeEncryptedString() {
+        this.videoObject.tracker = {};
+        this.videoObject.image = this.videoObject.image ? makeUrl(this.videoObject.image) : this.videoObject.image;
+
+        if (this.version > 1) {
+            return CryptoHelper.encryptString(this.videoObject, Abyass.DECRYPTION_KEY);
+        } else {
+            return this.encryptedString;
+        }
+    }
+
     async init() {
         await this.fetchVideoResponse();
         await this.extractEncryptedString();
-        this.videoObject = CryptoHelper.decryptString(this.encryptedString, Abyass.DECRYPTION_KEY);
-        console.log(this.videoObject);
+        const parseOjb = CryptoHelper.decryptString(this.encryptedString, Abyass.DECRYPTION_KEY);
+        if (!this.videoObject) {
+            this.videoObject = parseOjb;
+        } else {
+            this.version = 2;
+            this.videoObject.sources = parseOjb.sources;
+        }
+
+        if (this.videoObject.ads) {
+            this.videoObject.ads = { pop: [] };
+        }
     }
 }
 

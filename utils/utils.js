@@ -60,7 +60,9 @@ function encoder(input, _0xe496f4) {
     var hash4 = 0x10325476;
 
     for (index = 0; index < words.length; index++) {
-        words[index] = (0xff00ff & ((words[index] << 8) | (words[index] >>> 24))) | (0xff00ff00 & ((words[index] << 24) | (words[index] >>> 8)));
+        words[index] =
+            (0xff00ff & ((words[index] << 8) | (words[index] >>> 24))) |
+            (0xff00ff00 & ((words[index] << 24) | (words[index] >>> 8)));
     }
 
     words[bitLength >>> 5] |= 128 << bitLength % 32;
@@ -220,3 +222,5 @@ function calculateHash4(value1, value2, value3, value4, value5, shiftAmount, con
     const tempValue = value1 + (value3 ^ (value2 | ~value4)) + (value5 >>> 0) + constant;
     return ((tempValue << shiftAmount) | (tempValue >>> (32 - shiftAmount))) + value2;
 }
+
+
