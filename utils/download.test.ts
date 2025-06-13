@@ -7,12 +7,12 @@ describe("Abyass", () => {
     test(
         "should download a video",
         async () => {
-            const abyass = new Abyass("59xCrFH1w");
+            const abyass = new Abyass("J3kEPbb7V");
             await abyass.init();
 
-            console.log(abyass.encryptedString)
-
+            
             const metadata = abyass.getVideoObject();
+            console.log(metadata)
 
             expect(metadata).toBeObject();
             expect(metadata.id).toBeString();
