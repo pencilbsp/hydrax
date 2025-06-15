@@ -1,17 +1,17 @@
-import { JSDOM } from "jsdom";
-import { Deobfuscator } from "synchrony";
-// import { Deobfuscator } from "deobfuscator";
-import { dirname, join } from "node:path";
-import { existsSync, statSync } from "node:fs";
-import { readdir, rm, unlink, mkdir } from "node:fs/promises";
+import { JSDOM } from 'jsdom';
+import { Deobfuscator } from 'synchrony';
+import { dirname, join } from 'node:path';
+import { existsSync, statSync } from 'node:fs';
+import { readdir, rm, unlink, mkdir } from 'node:fs/promises';
 
-import { makeUrl } from "./utils-type";
-import { generateKey } from "./utils";
-import { CryptoHelper } from "./crypto";
-import { Semaphore } from "./semaphore";
-import { SimpleVideo, VideoObject } from "./video";
+import { generateKey } from './utils';
+import { makeUrl } from './utils-type';
+import { HYDRAX_CDN } from '../config';
+import { Semaphore } from './semaphore';
+import { CryptoHelper } from './crypto';
+import { SimpleVideo, VideoObject } from './video';
 
-const PROXY = process.env["PROXY"];
+const PROXY = process.env['PROXY'];
 
 export interface Config {
     resolution: string;
@@ -29,7 +29,7 @@ class Abyass {
     private static readonly SEGMENT_SIZE = 2097152;
     public readonly DEFAULT_CONCURRENT_DOWNLOAD_LIMIT = 4;
     public static readonly VALID_METADATA = /JSON\.parse\((?:window\.|)atob\(["']([^"]+)["']\)\)/;
-    public static readonly DECRYPTION_KEY = "RB0fpH8ZEyVLkv7c2i6MAJ5u3IKFDxlS1NTsnGaqmXYdUrtzjwObCgQP94hoeW+/=";
+    public static readonly DECRYPTION_KEY = 'RB0fpH8ZEyVLkv7c2i6MAJ5u3IKFDxlS1NTsnGaqmXYdUrtzjwObCgQP94hoeW+/=';
     constructor(private readonly videoId: string) {
         this.videoId = videoId;
         this.cryptoHelper = new CryptoHelper();
@@ -48,7 +48,7 @@ class Abyass {
 
     private async extractEncryptedString() {
         if (!this.html) {
-            throw new Error("HTML content not fetched");
+            throw new Error('HTML content not fetched');
         }
 
         if (Abyass.VALID_METADATA.test(this.html)) {
@@ -62,8 +62,8 @@ class Abyass {
             window: { document },
         } = new JSDOM(this.html);
 
-        const script = Array.from(document.querySelectorAll("script")).find(({ textContent }) =>
-            textContent.includes("SoTrym")
+        const script = Array.from(document.querySelectorAll('script')).find(({ textContent }) =>
+            textContent.includes('SoTrym'),
         );
 
         // const valid =
@@ -95,13 +95,13 @@ class Abyass {
                 const _var = content.match(/(?:var|let|const)\s(\w)\s=\s{};/)[1];
                 const partent = new RegExp(
                     `${_var}(?:[\\w.]+\\s=\\s(?:[\\{\\[](?:[\\s\\S]*?)[\\}\\]]|false|true|(?:['"].+['"])|(\\d+)));`,
-                    "g"
+                    'g',
                 );
                 const matches = content.match(partent);
                 if (Array.isArray(matches)) {
                     matches.unshift(`var ${_var} = {};`);
                     matches.push(`this.videoObject = ${_var};`);
-                    eval(matches.join("\n"));
+                    eval(matches.join('\n'));
                 }
             }
 
@@ -117,9 +117,9 @@ class Abyass {
 
         const functionContent = script.textContent.match(fRegex)[1];
 
-        var encryptedString = "";
+        var encryptedString = '';
         if (functionContent) {
-            let initFunction = script.textContent.slice(0, script.textContent.search(fRegex)) + ";";
+            let initFunction = script.textContent.slice(0, script.textContent.search(fRegex)) + ';';
 
             const [, hashedValue, functionName] = functionContent.match(vRegex);
 
@@ -128,12 +128,12 @@ class Abyass {
 
             if (!vbRegex.test(initFunction) && vbRegex.test(script.textContent)) {
                 const vb = script.textContent.match(vbRegex)[1];
-                initFunction = vb + ";" + initFunction;
+                initFunction = vb + ';' + initFunction;
             }
 
             if (!vaRegex.test(initFunction) && vaRegex.test(script.textContent)) {
                 const va = script.textContent.match(vaRegex)[1];
-                initFunction = va + ";" + initFunction;
+                initFunction = va + ';' + initFunction;
             }
 
             // console.log(script.textContent);
@@ -141,7 +141,7 @@ class Abyass {
             // console.log(initFunction);
             eval(initFunction);
         } else {
-            throw new Error("Encrypted string not found");
+            throw new Error('Encrypted string not found');
         }
 
         this.encryptedString = encryptedString;
@@ -190,9 +190,9 @@ class Abyass {
 
     private async *requestSegment(url: string, body: string, chunkSize: number = 65536) {
         const response = await fetch(url, {
-            method: "POST",
+            method: 'POST',
             body: JSON.stringify({ hash: body }),
-            headers: { "content-type": "application/json" },
+            headers: { 'content-type': 'application/json', origin: HYDRAX_CDN },
         });
 
         if (!response.ok) {
@@ -200,7 +200,7 @@ class Abyass {
         }
 
         if (!response.body) {
-            throw new Error("Response body is null");
+            throw new Error('Response body is null');
         }
 
         const reader = response.body.getReader();
@@ -233,10 +233,10 @@ class Abyass {
     private async mergeSegmentsIntoMp4File(segmentFolderPath: string, output: string): Promise<void> {
         const files = await readdir(segmentFolderPath);
         const segmentFiles = files
-            .filter((file) => file.startsWith("segment_"))
+            .filter((file) => file.startsWith('segment_'))
             .sort((a, b) => {
-                const numA = parseInt(a.replace("segment_", ""));
-                const numB = parseInt(b.replace("segment_", ""));
+                const numA = parseInt(a.replace('segment_', ''));
+                const numB = parseInt(b.replace('segment_', ''));
                 return numA - numB;
             });
 
@@ -254,14 +254,14 @@ class Abyass {
         try {
             await rm(segmentFolderPath, { recursive: true, force: true });
         } catch (error) {
-            console.error("Failed to delete folder: ", segmentFolderPath);
+            console.error('Failed to delete folder: ', segmentFolderPath);
         }
     }
 
     private async initializeDownloadTempDir(
         config: Config,
         simpleVideo: SimpleVideo,
-        totalSegments: number
+        totalSegments: number,
     ): Promise<{ path: string; remainingSegments: number[] }> {
         const tempFolderName = `temp_${simpleVideo.slug}_${simpleVideo.label}`;
         const tempFolder = join(dirname(config.outputFile || process.cwd()), tempFolderName);
@@ -279,7 +279,7 @@ class Abyass {
                 ) {
                     await unlink(filePath);
                 } else {
-                    const num = parseInt(file.replace("segment_", ""));
+                    const num = parseInt(file.replace('segment_', ''));
                     if (!isNaN(num)) {
                         existingSegments.push(num);
                     }
@@ -303,29 +303,29 @@ class Abyass {
         };
     }
 
-    async downloadVideo(config: Config): Promise<void> {
+    // Trong Config bạn không cần thay đổi, callback ta truyền ngoài
+    // Thay đổi signature của downloadVideo:
+    async downloadVideo(
+        config: Config,
+        onProgress?: (percent: number, downloadedBytes: number, totalBytes: number) => void,
+    ): Promise<void> {
         const simpleVideo = SimpleVideo.fromVideoObject(this.videoObject, config.resolution);
+        const totalBytes = simpleVideo.size; // tổng số bytes của video
+
         const segmentBodies = await this.generateSegmentsBody(simpleVideo);
-
         const segmentUrl = this.getSegmentUrl();
-
         await this.cryptoHelper.expandKey(generateKey(simpleVideo.size));
 
         const tempDir = await this.initializeDownloadTempDir(config, simpleVideo, Object.keys(segmentBodies).length);
 
         const segmentsToDownload =
             tempDir.remainingSegments.length > 0
-                ? Object.entries(segmentBodies).filter(([index]) => tempDir.remainingSegments.includes(Number(index)))
+                ? Object.entries(segmentBodies).filter(([idx]) => tempDir.remainingSegments.includes(Number(idx)))
                 : Object.entries(segmentBodies);
 
         const semaphore = new Semaphore(config.connections || this.DEFAULT_CONCURRENT_DOWNLOAD_LIMIT);
-        // const totalSegments = segmentsToDownload.length;
-        // const mediaSize = segmentsToDownload.length * Abyass.SEGMENT_SIZE;
 
-        let downloadedSegments = 0;
-        let totalBytesDownloaded = 0;
-
-        // const startTime = Date.now();
+        let downloadedBytes = 0;
 
         const downloadSegmentTask = async (index: number, body: string): Promise<void> => {
             await semaphore.acquire();
@@ -334,37 +334,33 @@ class Abyass {
                 const file = Bun.file(join(tempDir.path, `segment_${index}`));
                 const writer = file.writer();
 
-                const chunks = this.requestSegment(segmentUrl, body); // Gọi async generator để nhận chunks
-
-                for await (const chunk of chunks) {
-                    const array = isHeader
-                        ? await (() => {
+                for await (const chunk of this.requestSegment(segmentUrl, body)) {
+                    const data = isHeader
+                        ? await (async () => {
                               isHeader = false;
                               return this.cryptoHelper.decrypt(chunk);
                           })()
                         : chunk;
 
-                    writer.write(array);
-                    totalBytesDownloaded += array instanceof Uint8Array ? array.byteLength : array.length;
+                    writer.write(data);
+                    // cập nhật progress
+                    downloadedBytes += data.byteLength ?? data.length;
+                    if (onProgress) {
+                        const percent = Math.min(100, (downloadedBytes / totalBytes) * 100);
+                        onProgress(percent, downloadedBytes, totalBytes);
+                    }
                 }
 
                 await writer.end();
-                downloadedSegments++;
             } finally {
                 semaphore.release();
             }
         };
 
-        const downloadPromises = segmentsToDownload.map(([index, body]) => downloadSegmentTask(Number(index), body));
+        // chạy download
+        await Promise.all(segmentsToDownload.map(([idx, body]) => downloadSegmentTask(Number(idx), body)));
 
-        // Progress monitoring
-        // const progressInterval = setInterval(() => {
-        //     this.displayProgressBar(mediaSize, totalSegments, totalBytesDownloaded, downloadedSegments, startTime);
-        // }, 1000);
-
-        await Promise.all(downloadPromises); // Đợi tất cả các tác vụ hoàn thành
-        // clearInterval(progressInterval);
-
+        // sau khi xong merge file
         if (config.outputFile) {
             await this.mergeSegmentsIntoMp4File(tempDir.path, config.outputFile);
         }

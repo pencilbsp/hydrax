@@ -1,23 +1,21 @@
-import { unlink } from "fs/promises";
-import { describe, test, expect } from "bun:test";
+import { unlink } from 'fs/promises';
+import { describe, test, expect } from 'bun:test';
 
-import Abyass, { Config } from "./abyass";
+import Abyass, { Config } from './abyass';
 
-describe("Abyass", () => {
+describe('Abyass', () => {
     test(
-        "should download a video",
+        'should download a video',
         async () => {
-            const abyass = new Abyass("J3kEPbb7V");
+            const abyass = new Abyass('J3kEPbb7V');
             await abyass.init();
 
-            
             const metadata = abyass.getVideoObject();
-            console.log(metadata)
 
             expect(metadata).toBeObject();
             expect(metadata.id).toBeString();
 
-            const config: Config = { resolution: "720p", outputFile: "./download.mp4" };
+            const config: Config = { resolution: '720p', outputFile: './download.mp4' };
 
             await abyass.downloadVideo(config);
 
@@ -29,6 +27,6 @@ describe("Abyass", () => {
                 await unlink(config.outputFile);
             }
         },
-        { timeout: 60 * 1000 }
+        { timeout: 60 * 1000 },
     );
 });

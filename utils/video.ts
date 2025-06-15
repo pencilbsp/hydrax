@@ -23,11 +23,16 @@ export interface VideoObject {
     ads: {
         pop: string[];
     };
-    tracker?: { url?: string }
+    tracker?: { url?: string };
 }
 
 export class SimpleVideo {
-    constructor(public slug: string, public md5_id: number, public label: string, public size: number) {
+    constructor(
+        public slug: string,
+        public md5_id: number,
+        public label: string,
+        public size: number,
+    ) {
         this.slug = slug;
         this.md5_id = md5_id;
         this.label = label;

@@ -1,9 +1,9 @@
-import { DOMAIN } from "../config";
+import { DOMAIN } from '../config';
 
 function stringToHex(str) {
-    let hex = "";
+    let hex = '';
     for (let i = 0; i < str.length; i++) {
-        hex += str.charCodeAt(i).toString(16).padStart(2, "0");
+        hex += str.charCodeAt(i).toString(16).padStart(2, '0');
     }
     return hex;
 }
@@ -11,7 +11,7 @@ function stringToHex(str) {
 export const makeUrl = (a: string, prefix?: string) => {
     try {
         let urlString = a;
-        if (urlString.startsWith("//")) {
+        if (urlString.startsWith('//')) {
             urlString = window.location.protocol + urlString;
         }
 
@@ -21,7 +21,7 @@ export const makeUrl = (a: string, prefix?: string) => {
             url.pathname = prefix + url.pathname;
         }
 
-        url.searchParams.set("h", stringToHex(url.host));
+        url.searchParams.set('h', stringToHex(url.host));
         url.host = new URL(DOMAIN).host;
         return url.toString();
     } catch {

@@ -1,19 +1,19 @@
-import { Elysia, t } from "elysia";
+import { Elysia, t } from 'elysia';
 
-import { HYDRAX_CDN } from "../config";
+import { HYDRAX_CDN } from '../config';
 
 const referer = `${HYDRAX_CDN}/`;
-const streamRoute = new Elysia({ prefix: "/s" }).get(
-    "/:domain/:vid/:name",
+const streamRoute = new Elysia({ prefix: '/s' }).get(
+    '/:domain/:vid/:name',
     async ({ params: { vid, name, domain }, headers }) => {
-        const fileUrl = `https://${domain.replace(/_/g, ".")}/${vid}/${name}`;
+        const fileUrl = `https://${domain.replace(/_/g, '.')}/${vid}/${name}`;
 
         const response = await fetch(fileUrl, {
-            redirect: "manual",
-            headers: { referer, range: headers["range"] },
+            redirect: 'manual',
+            headers: { referer, range: headers['range'] },
         });
 
-        const location = response.headers.get("location");
+        const location = response.headers.get('location');
 
         if (location) {
             const url = new URL(location);
@@ -31,7 +31,7 @@ const streamRoute = new Elysia({ prefix: "/s" }).get(
             domain: t.String(),
             name: t.String(),
         }),
-    }
+    },
 );
 
 export default streamRoute;
