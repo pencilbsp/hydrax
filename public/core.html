@@ -17,7 +17,7 @@
 <div id="player">
     <div class="loader"><span></span></div>
 </div>
-<script src="/js/core.bundle.v3.js?v=1.1.1"></script>
+<script src="/js/core.bundle.v3.js?v=1.1.2"></script>
 <script>
     const isTouchScreen = "ontouchstart" in window || "onmsgesturechange" in window;
     const isUseExtension =
@@ -63,7 +63,7 @@
 <script>
     window.addEventListener("load", async () => {
         if (!window.SoTrym) {
-            var reload = await loadScript("/js/core.lite.v3.js?v=1.1.1");
+            var reload = await loadScript("/js/core.lite.v3.js?v=1.1.2");
             if (!reload || !window.SoTrym)
                 return document.write(
                     "Your browser is interfering with the loading of essential assets. Please consider disabling extensions and ad blockers, or using an alternative browser."
