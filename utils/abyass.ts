@@ -94,7 +94,7 @@ class Abyass {
             if (/(?:var|let|const)\s(\w)\s=\s{};/.test(content)) {
                 const _var = content.match(/(?:var|let|const)\s(\w)\s=\s{};/)[1];
                 const partent = new RegExp(
-                    `${_var}(?:[\\w.]+\\s=\\s(?:[\\{\\[](?:[\\s\\S]*?)[\\}\\]]|false|true|(?:['"].+['"])|(\\d+)));`,
+                    `${_var}\\.(?:[\\w.]+\\s=\\s(?:[\\{\\[](?:[\\s\\S]*?)[\\}\\]]|false|true|(?:['"].+['"])|(\\d+)));`,
                     'g',
                 );
                 const matches = content.match(partent);
@@ -344,7 +344,7 @@ class Abyass {
 
                     writer.write(data);
                     // cập nhật progress
-                    downloadedBytes += data.byteLength ?? data.length;
+                    downloadedBytes += typeof data === 'string' ? data.length : data.byteLength;
                     if (onProgress) {
                         const percent = Math.min(100, (downloadedBytes / totalBytes) * 100);
                         onProgress(percent, downloadedBytes, totalBytes);
