@@ -1,4 +1,5 @@
 {
+    "name": "abyass",
     "devDependencies": {
         "@types/bun": "^1.2.16",
         "@types/jsdom": "^21.1.7",
@@ -20,5 +21,8 @@
         "format": "prettier --write '**/*.{ts,tsx,css,json,mjs}'",
         "build": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile ./build/app app.ts",
         "build-cli": "bun build --compile --minify-whitespace --minify-syntax --target bun --outfile ./build/abyass abyass.ts"
+    },
+    "exports": {
+        ".": "./utils/abyass.ts"
     }
 }
