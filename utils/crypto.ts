@@ -1,3 +1,4 @@
+import Abyass from './abyass';
 import { VideoObject } from './video';
 
 export class CryptoHelper {
@@ -9,7 +10,10 @@ export class CryptoHelper {
         this.textEncoder = new TextEncoder();
     }
 
-    public static decryptString(encryptedString: string, decryptionKey: string): VideoObject {
+    public static b64(
+        encryptedString: string,
+        decryptionKey = 'RB0fpH8ZEyVLkv7c2i6MAJ5u3IKFDxlS1NTsnGaqmXYdUrtzjwObCgQP94hoeW+/=',
+    ) {
         let sanitizedInput = encryptedString.replace(/[^A-Za-z0-9+/=]/g, '');
         let decodedString = '';
         let index = 0;
@@ -28,7 +32,11 @@ export class CryptoHelper {
             if (fifthCharCode !== 0x40) decodedString += String.fromCharCode(fifthCharCode);
         }
 
-        return JSON.parse(decodeURIComponent(escape(decodedString)));
+        return decodeURIComponent(escape(decodedString));
+    }
+
+    public static decryptString(encryptedString: string, decryptionKey: string): VideoObject {
+        return JSON.parse(CryptoHelper.b64(encryptedString, decryptionKey));
     }
 
     public static encryptString(plainObject: VideoObject, encryptionKey: string): string {

@@ -62,8 +62,11 @@ class Abyass {
             window: { document },
         } = new JSDOM(this.html);
 
-        const script = Array.from(document.querySelectorAll('script')).find(({ textContent }) =>
-            textContent.includes('SoTrym'),
+        const scripts = Array.from(document.querySelectorAll('script'));
+        const maxLength = Math.max(...scripts.map(({ textContent }) => textContent.length));
+
+        const script = Array.from(document.querySelectorAll('script')).find(
+            ({ textContent }) => textContent.length === maxLength,
         );
 
         // const valid =
@@ -84,27 +87,25 @@ class Abyass {
         // ---------------
 
         const deobfuscator = new Deobfuscator();
-        const content = await deobfuscator.deobfuscateSource(script.textContent);
+        let content = await deobfuscator.deobfuscateSource(script.textContent);
+        content = content.replace(/\n/g, ' ');
+        content = content.replace(/\s\s+/g, ' ');
 
-        // console.log(content);
+        if (/\s\w\s=\s["'](.{24,}_)["';,]/.test(content)) {
+            this.encryptedString = content.match(/\s\w\s=\s["'](.{24,}_)["';,]/)[1];
 
-        if (/(?:var|let|const)\s\w\s=\s["'](.{24,}_)["'];/.test(content)) {
-            this.encryptedString = content.match(/(?:var|let|const)\s\w\s=\s["'](.{24,}_)["'];/)[1];
+            const xxx =
+                /((?:var|let|const)\s\w\s=\sJSON\.parse.*?)((?:var|let|const)\s\w)(\s=\s{\swidth:.*?};\s;\s;\s;)/;
+            if (xxx.test(content)) {
+                let script = content.match(xxx)[0];
 
-            if (/(?:var|let|const)\s(\w)\s=\s{};/.test(content)) {
-                const _var = content.match(/(?:var|let|const)\s(\w)\s=\s{};/)[1];
-                const partent = new RegExp(
-                    `${_var}\\.(?:[\\w.]+\\s=\\s(?:[\\{\\[](?:[\\s\\S]*?)[\\}\\]]|false|true|(?:['"].+['"])|(\\d+)));`,
-                    'g',
-                );
-                const matches = content.match(partent);
-                if (Array.isArray(matches)) {
-                    matches.unshift(`var ${_var} = {};`);
-                    matches.push(`this.videoObject = ${_var};`);
-                    eval(matches.join('\n'));
-                }
+                script = script.replace('window.atob', 'CryptoHelper.b64');
+                script = script.replace(xxx, '$1videoObject$3');
+                let videoObject = {};
+                eval(script);
+
+                this.videoObject = videoObject as any;
             }
-
             return;
         }
 
@@ -398,6 +399,10 @@ class Abyass {
 
         if (this.videoObject.ads) {
             this.videoObject.ads = { pop: [] };
+        }
+
+        if (this.videoObject.tracker) {
+            this.videoObject.tracker = {};
         }
     }
 }
