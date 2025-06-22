@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 
 import { HYDRAX_CDN } from '../config';
-import { hexToString } from '../utils/crypto';
+import { hexToString } from '../utils/helper';
 
 const prefix = '/s2' as const;
 const referer = `${HYDRAX_CDN}/`;

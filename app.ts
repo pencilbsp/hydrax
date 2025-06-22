@@ -1,6 +1,5 @@
 import { Elysia } from 'elysia';
 import { html } from '@elysiajs/html';
-// import { cors } from "@elysiajs/cors";
 import { staticPlugin } from '@elysiajs/static';
 
 import appRoute from './routes';
@@ -15,7 +14,6 @@ import streamV2Route from './routes/stream-v2';
 const PORT = Number(process.env.PORT || 5001);
 
 const app = new Elysia({ serve: { idleTimeout: 255 } })
-    // .use(cors())
     .use(html())
     .use(staticPlugin({ prefix: '/' }))
     .use(appRoute)

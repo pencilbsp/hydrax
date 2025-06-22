@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia';
-import { hexToString } from '../utils/crypto';
+
+import { hexToString } from '../utils/helper';
 import { HYDRAX_CDN, IMAGE_CDN } from '../config';
 
 const cdn = new URL(IMAGE_CDN);
